@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="Favocon.png">
+<title>Our Library - Irion Bookstore</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --dark: #1A1208;
+    --brown: #6B3F1A;
+    --gold: #C9A84C;
+    --rust: #B94F2A;
+    --paper: #EDE8DC;
+    --ink: #2C1810;
+    --muted: #8A7A6A;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 20;
+    opacity: 0.5;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 1.2rem 4rem;
+    background: rgba(245, 240, 232, 0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(107, 63, 26, 0.12);
+  }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--dark);
+    letter-spacing: -1px;
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--gold); font-style: italic; }
+
+  .nav-links { display: flex; align-items: center; gap: 2rem; }
+
+  .nav-links a {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    position: relative;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 0;
+    height: 1.5px;
+    background: var(--gold);
+    transition: width 0.25s ease;
+  }
+
+  .nav-links a:hover::after { width: 100%; }
+
+  .reader-profile {
+    display: none;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--ink);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .reader-profile.visible { display: flex; }
+
+  .reader-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid rgba(107, 63, 26, 0.18);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    object-fit: cover;
+  }
+
+  .library-hero {
+    padding: 6.5rem 4rem 4rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 3rem;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rust);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 32px;
+    height: 1.5px;
+    background: var(--rust);
+    display: block;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 0.98;
+    letter-spacing: -2px;
+    max-width: 760px;
+  }
+
+  h1 em { color: var(--brown); font-style: italic; }
+
+  .hero-copy {
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 430px;
+    font-weight: 300;
+  }
+
+  .library-wrap { padding: 0 4rem 6rem; }
+
+  .genre-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .genre-btn {
+    border: 1px solid rgba(107, 63, 26, 0.22);
+    background: rgba(237, 232, 220, 0.7);
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .genre-btn:hover,
+  .genre-btn.active {
+    background: var(--dark);
+    border-color: var(--dark);
+    color: var(--cream);
+  }
+
+  .library-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2.5rem;
+  }
+
+  .book-card {
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+
+  .book-card:hover { transform: translateY(-8px); }
+
+  .book-cover {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    position: relative;
+    overflow: hidden;
+    background: var(--paper);
+    margin-bottom: 1.2rem;
+    box-shadow: 0 14px 35px rgba(26,18,8,0.08);
+  }
+
+  .book-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .book-card:hover .book-cover-img { transform: scale(1.05); }
+
+  .book-tag {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    background: var(--rust);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .book-wishlist {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .book-card:hover .book-wishlist { opacity: 1; }
+
+  .book-genre {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rust);
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .book-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+  }
+
+  .book-author {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.7rem;
+  }
+
+  .book-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .rating-score {
+    color: var(--gold);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .rating-count {
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .book-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .book-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--brown);
+  }
+
+  .book-price .original {
+    text-decoration: line-through;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-right: 0.3rem;
+    font-weight: 400;
+  }
+
+  .btn-add-cart {
+    background: var(--dark);
+    color: var(--cream);
+    border: none;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-add-cart:hover { background: var(--brown); }
+
+  footer {
+    background: var(--dark);
+    color: rgba(245,240,232,0.55);
+    padding: 2rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    font-size: 0.78rem;
+  }
+
+  footer a { color: var(--gold); text-decoration: none; }
+
+  @media (max-width: 1100px) {
+    .library-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 900px) {
+    nav, .library-hero, .library-wrap, footer { padding-left: 2rem; padding-right: 2rem; }
+    .library-hero { grid-template-columns: 1fr; padding-top: 4.5rem; }
+  }
+
+  @media (max-width: 700px) {
+    nav { align-items: flex-start; flex-direction: column; }
+    .nav-links { flex-wrap: wrap; gap: 1rem; }
+    .library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem; }
+    footer { flex-direction: column; }
+  }
+
+  @media (max-width: 430px) {
+    .library-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html"> <img src="Irionicon.png" width="140" alt="Irion Logo"></span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="index.html#new-arrivals">New Arrivals</a>
+    <a href="index.html#categories">Genres</a>
+  </div>
+  <div class="reader-profile" id="readerProfile" aria-label="Signed in reader">
+    <img class="reader-avatar" id="readerAvatar" src="pie.png" alt="">
+    <span id="readerRoomName"></span>
+  </div>
+</nav>
+
+<main>
+  <section class="library-hero">
+    <div>
+      <div class="eyebrow">76 Real Books</div>
+      <h1>Explore the <em>library</em></h1>
+    </div>
+    <p class="hero-copy">
+      Nineteen rows of real books, four books per row on desktop, with covers, title, author, genre, price, sale price, tag, rating, and review count.
+    </p>
+  </section>
+
+  <section class="library-wrap">
+    <div class="genre-filter" id="genreFilter" aria-label="Filter books by genre"></div>
+    <div class="library-grid" id="libraryGrid"></div>
+  </section>
+</main>
+
+<footer>
+  <span>Book covers load from Open Library by ISBN.</span>
+  <a href="index.html">Back to main page</a>
+</footer>
+
+<script>
+  const books = [
+    { title: "Harry Potter and the Sorcerer's Stone", author: "J.K. Rowling", genre: "Fantasy", price: 14.99, oldPrice: 22.99, tag: "Magic", rating: 4.9, reviews: 125843, isbn: "9780439708180" },
+    { title: "The Hobbit", author: "J.R.R. Tolkien", genre: "Fantasy", price: 13.99, oldPrice: 19.99, tag: "Classic", rating: 4.8, reviews: 98420, isbn: "9780547928227" },
+    { title: "The Fellowship of the Ring", author: "J.R.R. Tolkien", genre: "Fantasy", price: 15.99, oldPrice: 24.99, tag: "Epic", rating: 4.8, reviews: 87510, isbn: "9780547928210" },
+    { title: "1984", author: "George Orwell", genre: "Dystopian", price: 11.99, oldPrice: 17.99, tag: "Classic", rating: 4.7, reviews: 112304, isbn: "9780451524935" },
+    { title: "To Kill a Mockingbird", author: "Harper Lee", genre: "Literary Fiction", price: 12.99, oldPrice: 18.99, tag: "Classic", rating: 4.8, reviews: 103219, isbn: "9780061120084" },
+    { title: "The Great Gatsby", author: "F. Scott Fitzgerald", genre: "Literary Fiction", price: 10.99, oldPrice: 16.99, tag: "Classic", rating: 4.4, reviews: 78644, isbn: "9780743273565" },
+    { title: "Pride and Prejudice", author: "Jane Austen", genre: "Romance", price: 9.99, oldPrice: 14.99, tag: "Classic", rating: 4.7, reviews: 90215, isbn: "9780141439518" },
+    { title: "Me Before You", author: "Jojo Moyes", genre: "Romance", price: 13.49, oldPrice: 18.99, tag: "Emotional", rating: 4.6, reviews: 68420, isbn: "9780143124542" },
+    { title: "Dune", author: "Frank Herbert", genre: "Science Fiction", price: 16.99, oldPrice: 26.99, tag: "Epic", rating: 4.7, reviews: 74106, isbn: "9780441172719" },
+    { title: "The Hunger Games", author: "Suzanne Collins", genre: "Young Adult", price: 13.49, oldPrice: 19.99, tag: "Bestseller", rating: 4.6, reviews: 96822, isbn: "9780439023528" },
+    { title: "The Catcher in the Rye", author: "J.D. Salinger", genre: "Literary Fiction", price: 11.49, oldPrice: 17.00, tag: "Classic", rating: 4.1, reviews: 54418, isbn: "9780316769488" },
+    { title: "The Notebook", author: "Nicholas Sparks", genre: "Romance", price: 10.99, oldPrice: 15.99, tag: "Tender", rating: 4.5, reviews: 52380, isbn: "9780446605236" },
+    { title: "The Book Thief", author: "Markus Zusak", genre: "Historical Fiction", price: 13.99, oldPrice: 21.00, tag: "Beloved", rating: 4.8, reviews: 88831, isbn: "9780375842207" },
+    { title: "The Alchemist", author: "Paulo Coelho", genre: "Fiction", price: 12.49, oldPrice: 18.99, tag: "Inspiring", rating: 4.5, reviews: 79220, isbn: "9780061122415" },
+    { title: "The Kite Runner", author: "Khaled Hosseini", genre: "Historical Fiction", price: 14.49, oldPrice: 20.99, tag: "Reader Fave", rating: 4.7, reviews: 69780, isbn: "9781594631931" },
+    { title: "Life of Pi", author: "Yann Martel", genre: "Adventure", price: 12.99, oldPrice: 18.00, tag: "Award", rating: 4.5, reviews: 51204, isbn: "9780156027328" },
+    { title: "The Da Vinci Code", author: "Dan Brown", genre: "Thriller", price: 13.99, oldPrice: 19.99, tag: "Mystery", rating: 4.3, reviews: 83491, isbn: "9780307474278" },
+    { title: "Gone Girl", author: "Gillian Flynn", genre: "Thriller", price: 14.99, oldPrice: 22.99, tag: "Twist", rating: 4.4, reviews: 76319, isbn: "9780307588371" },
+    { title: "The Girl on the Train", author: "Paula Hawkins", genre: "Thriller", price: 13.49, oldPrice: 20.00, tag: "Suspense", rating: 4.2, reviews: 68110, isbn: "9781594634024" },
+    { title: "The Silent Patient", author: "Alex Michaelides", genre: "Thriller", price: 15.99, oldPrice: 26.99, tag: "Popular", rating: 4.5, reviews: 60942, isbn: "9781250301697" },
+    { title: "Where the Crawdads Sing", author: "Delia Owens", genre: "Fiction", price: 15.49, oldPrice: 26.00, tag: "Bestseller", rating: 4.6, reviews: 97154, isbn: "9780735219106" },
+    { title: "Educated", author: "Tara Westover", genre: "Memoir", price: 13.99, oldPrice: 18.00, tag: "Sale", rating: 4.7, reviews: 42912, isbn: "9780399590504" },
+    { title: "The Hating Game", author: "Sally Thorne", genre: "Romance", price: 12.99, oldPrice: 17.99, tag: "Witty", rating: 4.4, reviews: 49810, isbn: "9780062439598" },
+    { title: "Becoming", author: "Michelle Obama", genre: "Memoir", price: 19.49, oldPrice: 30.00, tag: "Sale", rating: 4.8, reviews: 98240, isbn: "9781524763138" },
+    { title: "Steve Jobs", author: "Walter Isaacson", genre: "Biography", price: 18.99, oldPrice: 25.00, tag: "Biography", rating: 4.6, reviews: 40428, isbn: "9781451648539" },
+    { title: "Sapiens", author: "Yuval Noah Harari", genre: "History", price: 20.99, oldPrice: 29.99, tag: "Big Ideas", rating: 4.7, reviews: 91820, isbn: "9780062316097" },
+    { title: "The Flatshare", author: "Beth O'Leary", genre: "Romance", price: 13.99, oldPrice: 19.99, tag: "Charming", rating: 4.4, reviews: 37160, isbn: "9781250295637" },
+    { title: "Atomic Habits", author: "James Clear", genre: "Self Help", price: 18.99, oldPrice: 27.00, tag: "Bestseller", rating: 4.8, reviews: 65721, isbn: "9780735211292" },
+    { title: "Thinking, Fast and Slow", author: "Daniel Kahneman", genre: "Psychology", price: 17.49, oldPrice: 24.99, tag: "Classic", rating: 4.6, reviews: 50111, isbn: "9780374533557" },
+    { title: "A Brief History of Time", author: "Stephen Hawking", genre: "Science", price: 12.99, oldPrice: 18.00, tag: "Science", rating: 4.6, reviews: 38491, isbn: "9780553380163" },
+    { title: "Cosmos", author: "Carl Sagan", genre: "Science", price: 16.99, oldPrice: 24.99, tag: "Space", rating: 4.8, reviews: 32780, isbn: "9780345331359" },
+    { title: "The Gene", author: "Siddhartha Mukherjee", genre: "Science", price: 18.99, oldPrice: 28.00, tag: "Science", rating: 4.7, reviews: 21844, isbn: "9781476733500" },
+    { title: "The Immortal Life of Henrietta Lacks", author: "Rebecca Skloot", genre: "Science", price: 15.99, oldPrice: 23.00, tag: "True Story", rating: 4.7, reviews: 45706, isbn: "9781400052189" },
+    { title: "Hidden Figures", author: "Margot Lee Shetterly", genre: "History", price: 14.49, oldPrice: 21.00, tag: "Inspiring", rating: 4.7, reviews: 18420, isbn: "9780062363602" },
+    { title: "The Martian", author: "Andy Weir", genre: "Science Fiction", price: 14.99, oldPrice: 23.00, tag: "Staff Pick", rating: 4.7, reviews: 72418, isbn: "9780553418026" },
+    { title: "Project Hail Mary", author: "Andy Weir", genre: "Science Fiction", price: 15.99, oldPrice: 27.99, tag: "Staff Pick", rating: 4.9, reviews: 34810, isbn: "9780593135204" },
+    { title: "Book Lovers", author: "Emily Henry", genre: "Romance", price: 15.99, oldPrice: 27.00, tag: "Bestseller", rating: 4.6, reviews: 62890, isbn: "9780593334836" },
+    { title: "Ready Player One", author: "Ernest Cline", genre: "Science Fiction", price: 13.99, oldPrice: 20.00, tag: "Adventure", rating: 4.4, reviews: 42116, isbn: "9780307887443" },
+    { title: "Neuromancer", author: "William Gibson", genre: "Science Fiction", price: 12.99, oldPrice: 18.99, tag: "Cyberpunk", rating: 4.2, reviews: 29830, isbn: "9780441569595" },
+    { title: "Beach Read", author: "Emily Henry", genre: "Romance", price: 14.99, oldPrice: 24.00, tag: "Sunny", rating: 4.5, reviews: 58740, isbn: "9781984806734" },
+    { title: "Foundation", author: "Isaac Asimov", genre: "Science Fiction", price: 13.49, oldPrice: 19.99, tag: "Classic", rating: 4.4, reviews: 37306, isbn: "9780553293357" },
+    { title: "Fahrenheit 451", author: "Ray Bradbury", genre: "Dystopian", price: 11.99, oldPrice: 17.99, tag: "Classic", rating: 4.5, reviews: 62874, isbn: "9781451673319" },
+    { title: "Brave New World", author: "Aldous Huxley", genre: "Dystopian", price: 12.49, oldPrice: 18.99, tag: "Classic", rating: 4.3, reviews: 49225, isbn: "9780060850524" },
+    { title: "People We Meet on Vacation", author: "Emily Henry", genre: "Romance", price: 15.49, oldPrice: 26.00, tag: "Getaway", rating: 4.5, reviews: 55320, isbn: "9781984806758" },
+    { title: "The Handmaid's Tale", author: "Margaret Atwood", genre: "Dystopian", price: 13.99, oldPrice: 19.99, tag: "Modern Classic", rating: 4.5, reviews: 58102, isbn: "9780385490818" },
+    { title: "The Road", author: "Cormac McCarthy", genre: "Literary Fiction", price: 12.99, oldPrice: 18.00, tag: "Award", rating: 4.4, reviews: 51462, isbn: "9780307387899" },
+    { title: "The Goldfinch", author: "Donna Tartt", genre: "Literary Fiction", price: 16.99, oldPrice: 30.00, tag: "Award", rating: 4.3, reviews: 39834, isbn: "9780316055444" },
+    { title: "Red, White & Royal Blue", author: "Casey McQuiston", genre: "Romance", price: 14.99, oldPrice: 23.00, tag: "Royal", rating: 4.6, reviews: 72110, isbn: "9781250316776" },
+    { title: "A Little Life", author: "Hanya Yanagihara", genre: "Literary Fiction", price: 17.99, oldPrice: 28.00, tag: "Emotional", rating: 4.5, reviews: 55928, isbn: "9780804172707" },
+    { title: "Normal People", author: "Sally Rooney", genre: "Literary Fiction", price: 14.99, oldPrice: 22.00, tag: "Modern", rating: 4.2, reviews: 44890, isbn: "9781984822178" },
+    { title: "The Kiss Quotient", author: "Helen Hoang", genre: "Romance", price: 13.99, oldPrice: 19.00, tag: "Sweet", rating: 4.5, reviews: 46850, isbn: "9780451490803" },
+    { title: "Circe", author: "Madeline Miller", genre: "Fantasy", price: 15.99, oldPrice: 27.00, tag: "Myth", rating: 4.7, reviews: 67145, isbn: "9780316556347" },
+    { title: "The Song of Achilles", author: "Madeline Miller", genre: "Fantasy", price: 15.49, oldPrice: 23.00, tag: "Reader Fave", rating: 4.8, reviews: 75622, isbn: "9780062060624" },
+    { title: "The Unhoneymooners", author: "Christina Lauren", genre: "Romance", price: 13.49, oldPrice: 18.99, tag: "Funny", rating: 4.4, reviews: 53270, isbn: "9781501128035" },
+    { title: "The Seven Husbands of Evelyn Hugo", author: "Taylor Jenkins Reid", genre: "Fiction", price: 15.99, oldPrice: 24.99, tag: "Bestseller", rating: 4.7, reviews: 88250, isbn: "9781501161933" },
+    { title: "Daisy Jones & The Six", author: "Taylor Jenkins Reid", genre: "Fiction", price: 15.49, oldPrice: 27.00, tag: "Music", rating: 4.5, reviews: 52218, isbn: "9781524798628" },
+    { title: "The Spanish Love Deception", author: "Elena Armas", genre: "Romance", price: 14.49, oldPrice: 22.00, tag: "Slow Burn", rating: 4.3, reviews: 41490, isbn: "9781668002520" },
+    { title: "Tomorrow, and Tomorrow, and Tomorrow", author: "Gabrielle Zevin", genre: "Fiction", price: 15.99, oldPrice: 28.00, tag: "Staff Pick", rating: 4.7, reviews: 64211, isbn: "9780593321201" },
+    { title: "Lessons in Chemistry", author: "Bonnie Garmus", genre: "Fiction", price: 16.99, oldPrice: 29.00, tag: "Popular", rating: 4.6, reviews: 71680, isbn: "9780385547345" },
+    { title: "Fourth Wing", author: "Rebecca Yarros", genre: "Fantasy", price: 18.99, oldPrice: 29.99, tag: "Bestseller", rating: 4.7, reviews: 90212, isbn: "9781649374042" },
+    { title: "Love and Other Words", author: "Christina Lauren", genre: "Romance", price: 13.99, oldPrice: 19.99, tag: "Second Chance", rating: 4.6, reviews: 48320, isbn: "9781501128011" },
+    { title: "The Night Circus", author: "Erin Morgenstern", genre: "Fantasy", price: 14.99, oldPrice: 21.99, tag: "Magic", rating: 4.5, reviews: 48854, isbn: "9780307744432" },
+    { title: "Station Eleven", author: "Emily St. John Mandel", genre: "Science Fiction", price: 14.49, oldPrice: 20.00, tag: "Modern", rating: 4.4, reviews: 35160, isbn: "9780804172448" },
+    { title: "Every Summer After", author: "Carley Fortune", genre: "Romance", price: 15.49, oldPrice: 24.00, tag: "Summer", rating: 4.5, reviews: 36280, isbn: "9780593438534" },
+    { title: "Cloud Atlas", author: "David Mitchell", genre: "Literary Fiction", price: 15.49, oldPrice: 22.00, tag: "Epic", rating: 4.3, reviews: 29145, isbn: "9780375507250" },
+    { title: "The Secret History", author: "Donna Tartt", genre: "Mystery", price: 16.49, oldPrice: 25.00, tag: "Dark Academia", rating: 4.5, reviews: 55644, isbn: "9781400031702" },
+    { title: "Norwegian Wood", author: "Haruki Murakami", genre: "Literary Fiction", price: 14.49, oldPrice: 20.00, tag: "Modern Classic", rating: 4.3, reviews: 40280, isbn: "9780375704024" },
+    { title: "It Ends with Us", author: "Colleen Hoover", genre: "Romance", price: 14.99, oldPrice: 22.99, tag: "Popular", rating: 4.6, reviews: 109430, isbn: "9781501110368" },
+    { title: "Kafka on the Shore", author: "Haruki Murakami", genre: "Literary Fiction", price: 15.99, oldPrice: 24.00, tag: "Surreal", rating: 4.5, reviews: 36782, isbn: "9781400079278" },
+    { title: "The Shining", author: "Stephen King", genre: "Horror", price: 13.99, oldPrice: 19.99, tag: "Horror", rating: 4.6, reviews: 64210, isbn: "9780307743657" },
+    { title: "Reminders of Him", author: "Colleen Hoover", genre: "Romance", price: 15.99, oldPrice: 27.99, tag: "Heartfelt", rating: 4.7, reviews: 58760, isbn: "9781542025607" },
+    { title: "Dracula", author: "Bram Stoker", genre: "Horror", price: 10.99, oldPrice: 15.99, tag: "Classic", rating: 4.4, reviews: 49211, isbn: "9780141439846" },
+    { title: "Frankenstein", author: "Mary Shelley", genre: "Horror", price: 9.99, oldPrice: 14.99, tag: "Classic", rating: 4.3, reviews: 58706, isbn: "9780486282114" },
+    { title: "Outlander", author: "Diana Gabaldon", genre: "Romance", price: 16.99, oldPrice: 24.99, tag: "Epic", rating: 4.6, reviews: 74200, isbn: "9780440212560" },
+    { title: "The Picture of Dorian Gray", author: "Oscar Wilde", genre: "Classic", price: 10.49, oldPrice: 16.00, tag: "Classic", rating: 4.5, reviews: 45318, isbn: "9780141439570" },
+    { title: "Moby-Dick", author: "Herman Melville", genre: "Classic", price: 12.99, oldPrice: 18.99, tag: "Classic", rating: 4.1, reviews: 34219, isbn: "9781503280786" }
+  ];
+
+  const grid = document.getElementById('libraryGrid');
+  const genreFilter = document.getElementById('genreFilter');
+
+  function renderBooks(visibleBooks) {
+    grid.innerHTML = visibleBooks.map(book => `
+    <article class="book-card">
+      <div class="book-cover">
+        <img class="book-cover-img" src="https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg" alt="${book.title} cover">
+        <div class="book-tag">${book.tag}</div>
+        <button class="book-wishlist" title="Add to wishlist">♡</button>
+      </div>
+      <div class="book-genre">${book.genre}</div>
+      <h2 class="book-title">${book.title}</h2>
+      <div class="book-author">${book.author}</div>
+      <div class="book-rating">
+        <span class="rating-score">${book.rating.toFixed(1)} / 5</span>
+        <span class="rating-count">(${book.reviews.toLocaleString()} reviews)</span>
+      </div>
+      <div class="book-footer">
+        <div class="book-price"><span class="original">$${book.oldPrice.toFixed(2)}</span>$${book.price.toFixed(2)}</div>
+        <button class="btn-add-cart">+</button>
+      </div>
+    </article>
+    `).join('');
+  }
+
+  function renderGenreButtons() {
+    const genres = ['All', ...new Set(books.map(book => book.genre))];
+
+    genreFilter.innerHTML = genres.map((genre, index) => `
+      <button class="genre-btn${index === 0 ? ' active' : ''}" type="button" data-genre="${genre}">
+        ${genre}
+      </button>
+    `).join('');
+
+    genreFilter.addEventListener('click', event => {
+      const button = event.target.closest('.genre-btn');
+      if (!button) return;
+
+      const selectedGenre = button.dataset.genre;
+      document.querySelectorAll('.genre-btn').forEach(genreButton => {
+        genreButton.classList.toggle('active', genreButton === button);
+      });
+
+      renderBooks(selectedGenre === 'All' ? books : books.filter(book => book.genre === selectedGenre));
+    });
+  }
+
+  renderGenreButtons();
+  renderBooks(books);
+
+  function updateReaderProfile() {
+    const roomName = localStorage.getItem('irionRoomName');
+    const avatarSrc = localStorage.getItem('irionAvatar') || 'pie.png';
+    const profile = document.getElementById('readerProfile');
+    const roomNameLabel = document.getElementById('readerRoomName');
+    const avatar = document.getElementById('readerAvatar');
+
+    if (!roomName || !profile || !roomNameLabel || !avatar) return;
+
+    roomNameLabel.textContent = roomName;
+    avatar.src = avatarSrc;
+    avatar.alt = `${roomName} character`;
+    profile.classList.add('visible');
+  }
+
+  updateReaderProfile();
+</script>
+</body>
+</html>
